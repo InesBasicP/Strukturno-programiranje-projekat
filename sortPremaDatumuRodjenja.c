@@ -1,7 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
-#include<string.h>
 
 // deklarisanje strukture
 typedef struct Pacijent
@@ -14,21 +13,20 @@ typedef struct Pacijent
     char cLekar[50];
 } PACIJENT;
 
-
 int main()
-{
+{   
     // deklaracija promenljivih
-    char cTrazeniLekar[50];
+    int iTrazenaGodina;
     FILE *fPacijenti;
+    int iBrojPacijenata = 0;
     PACIJENT* auPacijenti;
     PACIJENT uPacijenti;
     PACIJENT uTemp;
-    int iBrojPacijenata = 0;
     bool bIzmenaRedosleda;
 
-    // unos trazenog lekara 
-    printf("Unesite trazenog lekara: ");
-    gets(cTrazeniLekar);
+    // unos trazene godine 
+    printf("Unesie trazenu godinu rodjenja: ");
+    scanf("%d", &iTrazenaGodina);
 
     // inicijalizacija pokazivacke promenljive (na fajl koji se otvara)
     fPacijenti = fopen("C:/Pacijenti/Lista.csv", "r");
@@ -42,9 +40,9 @@ int main()
     {   
         // dok nisu svi redovi u csv fajlu ocitani, ocitavati ih i smestati u niz struktura auPacijenti...
         while (fscanf(fPacijenti, "%[^','], %d.%d.%d, %lld, %[^','], %[^','], %[^'\n']\n", &uPacijenti.cImePrezime, &uPacijenti.iDan, &uPacijenti.iMesec, &uPacijenti.iGodina, &uPacijenti.JMBG, &uPacijenti.cAdresa, &uPacijenti.cGrad, &uPacijenti.cLekar) != EOF)
-        {   
-            // ...ukoliko je izabrani lekar pacijenta isti onaj cije je ime korisnik uneo
-            if (strcmpi(cTrazeniLekar, uPacijenti.cLekar) == 0)
+        {
+            // ...ukoliko je godina rodjenja pacijenta jednaka trazenoj godini koju je korisnik uneo
+            if (uPacijenti.iGodina == iTrazenaGodina)
             {
                 // ukoliko je niz struktura prazan, alocirati inicijalnu memoriju
                 if (iBrojPacijenata == 0)
@@ -62,31 +60,40 @@ int main()
             }
         }
     }
-    
+
     // zatvaranje fajla
     fclose(fPacijenti);
     fPacijenti = NULL;
 
-    // sortiranje pacijenata prema godini rodjenja
-    do{
-		bIzmenaRedosleda = false;
-		for (int iIndex=0; iIndex < iBrojPacijenata-1; iIndex++)
+    // sortiranje pacijenata prema datumu rodjenja
+   do 
+   {
+    bIzmenaRedosleda = false;
+    for (int iIndex = 0; iIndex < iBrojPacijenata - 1; iIndex++) 
+    {
+        // provera da li je mesec rodjenja i-tog veci od meseca rodjenja i+1-og pacijenta
+        if (auPacijenti[iIndex].iMesec > auPacijenti[iIndex + 1].iMesec) 
         {
-            // provera da li je godina rodjenja i-tog veca od godine rodjenja i+1-og pacijenta
-			if(auPacijenti[iIndex].iGodina > auPacijenti[iIndex+1].iGodina)
-            {   
-                // ukoliko jeste, zameniti im redosled
-				uTemp = auPacijenti[iIndex];
-				auPacijenti[iIndex]=auPacijenti[iIndex+1];
-				auPacijenti[iIndex+1]=uTemp;
-				bIzmenaRedosleda = true;
-			}
-		}
-	
-	} while(bIzmenaRedosleda);
+            // ukoliko jeste, zameniti im redosled
+            uTemp = auPacijenti[iIndex];
+            auPacijenti[iIndex] = auPacijenti[iIndex + 1];
+            auPacijenti[iIndex + 1] = uTemp;
+            bIzmenaRedosleda = true;
+        }
+        // zatim, provera da li je dan rodjenja i-tog veci od meseca rodjenja i+1-og pacijenta
+        else if (auPacijenti[iIndex].iMesec == auPacijenti[iIndex + 1].iMesec && auPacijenti[iIndex].iDan > auPacijenti[iIndex + 1].iDan) 
+        {
+            // ukoliko jeste, zameniti im redosled
+            uTemp = auPacijenti[iIndex];
+            auPacijenti[iIndex] = auPacijenti[iIndex + 1];
+            auPacijenti[iIndex + 1] = uTemp;
+            bIzmenaRedosleda = true;
+        }
+    }
+   } while (bIzmenaRedosleda);
 
     // sortirani prikaz svih prikupljenih clanova niza
-	for(int iIndex=0; iIndex < iBrojPacijenata; iIndex++)
+    for(int iIndex=0; iIndex < iBrojPacijenata; iIndex++)
     {
 		printf("%s, %d.%d.%d, %lld, %s, %s, %s\n", auPacijenti[iIndex].cImePrezime, auPacijenti[iIndex].iDan, auPacijenti[iIndex].iMesec, auPacijenti[iIndex].iGodina, auPacijenti[iIndex].JMBG, auPacijenti[iIndex].cAdresa, auPacijenti[iIndex].cGrad, auPacijenti[iIndex].cLekar);
 	}
